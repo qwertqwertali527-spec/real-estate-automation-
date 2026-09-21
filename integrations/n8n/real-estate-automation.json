@@ -1,0 +1,107 @@
+{
+  "name": "EstateFlow — Real Estate Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "estateflow-inbound",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-inbound",
+      "name": "Inbound Message Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-360, 300],
+      "webhookId": "estateflow-inbound"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://localhost:3000/api/webhooks/inbound",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ channel: $json.body.channel || 'sms', from: $json.body.from, email: $json.body.email, name: $json.body.name, body: $json.body.text || $json.body.body }) }}",
+        "options": {}
+      },
+      "id": "forward-to-estateflow",
+      "name": "EstateFlow Autopilot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-80, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "version": 2 },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.autopilot.sent }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-ai-replied",
+      "name": "AI replied?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "amount": 5
+      },
+      "id": "wait",
+      "name": "Wait 5s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [420, 200],
+      "webhookId": "estateflow-wait"
+    },
+    {
+      "parameters": {
+        "url": "=http://localhost:3000/api/dashboard/stats",
+        "options": {}
+      },
+      "id": "get-stats",
+      "name": "Get Suite Stats",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [640, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, autopilot: $json.autopilot, note: 'EstateFlow handled this message autonomously' }) }}",
+        "options": {}
+      },
+      "id": "respond",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [420, 420]
+    }
+  ],
+  "connections": {
+    "Inbound Message Webhook": { "main": [[{ "node": "EstateFlow Autopilot", "type": "main", "index": 0 }]] },
+    "EstateFlow Autopilot": { "main": [[{ "node": "AI replied?", "type": "main", "index": 0 }]] },
+    "AI replied?": {
+      "main": [
+        [{ "node": "Wait 5s", "type": "main", "index": 0 }],
+        [{ "node": "Respond", "type": "main", "index": 0 }]
+      ]
+    },
+    "Wait 5s": { "main": [[{ "node": "Get Suite Stats", "type": "main", "index": 0 }]] },
+    "Get Suite Stats": { "main": [[{ "node": "Respond", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "staticData": null,
+  "meta": {
+    "description": "Forwards inbound SMS/email/webchat messages into the EstateFlow autonomous messaging pipeline. Import into N8N, then point the two HTTP Request nodes at your EstateFlow server URL. Replace the Inbound Message Webhook with a Twilio / IMAP / email trigger as needed."
+  },
+  "tags": ["real-estate", "ai", "automation"]
+}

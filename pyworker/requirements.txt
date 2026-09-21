@@ -1,0 +1,4 @@
+# EstateFlow python worker dependencies (only needed for the http connector;
+# the `sample` and `csv` connectors are standard-library only)
+requests>=2.31
+beautifulsoup4>=4.12
