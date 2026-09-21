@@ -63,7 +63,7 @@ const INTENT_RULES = [
   ['valuation',   /\b(worth|value of|valuation|appraise|cma|what.s my home)\b/i],
   ['selling',     /\b(sell|selling|list(ing)? my (house|home|property)|put (my|it) on the market)\b/i],
   ['buying',      /\b(buy|buying|purchase|looking (for|at) (a|an|homes?)|house hunt|showings?|tour)\b/i],
-  ['renting',     /\b(rent|rental|lease|apartment for rent)\b/i],
+  ['renting',     /\b(rent(ing|al|als?)?|lease|leasing|apartment for rent)\b/i],
   ['investing',   /\b(invest|cash ?flow|roi|rental property|flip)\b/i],
   ['scheduling',  /\b(schedule|appointment|tour|viewing|walk ?through|available (to )?show)\b/i],
   ['mortgage',    /\b(mortgage|pre.?approv|financing|loan|interest rate)\b/i],
